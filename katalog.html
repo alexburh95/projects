@@ -1,0 +1,419 @@
+
+<link rel="stylesheet" href="css/main.css">
+
+<div id="popup-container" class="popup-container anim-popup" style="display: block;">
+      <div class="fade" style="opacity: 1;"></div>
+      <div id="catalog-popup" class="popup popup-catalog active" style="top: 175px;">
+        <div class="callback"><span class="error-text">Произошла ошибка. Приносим свои извинения. Попробуйте отправить заявку через 30 минут.</span></div>
+        <div class="close"></div>
+        <div class="popup-title">Каталог</div><img src="/img/katalog.png" class="popup-journal">
+        <div class="popup-form">
+          <div class="popup-form-title">Введите ваши данные:</div>
+          <input placeholder="Имя" class="input">
+          <input placeholder="+7 (985) 333-44-44" class="input input-phone">
+          <div id="catalog-send" class="popup-btn zvonok">Отправить</div>
+          <div class="popup-form-docs active">
+            <div></div><span>Нажимая кнопку "Отправить", вы соглашаетесь с нашей <a href="" target="_blank"> политикой конфиденциальности</a></span>
+          </div>
+        </div>
+      </div>
+      <div id="call-popup" class="popup popup-call">
+        <div class="callback"><span class="success-text">Заявка доставлена. Мы перезвоним вам в ближайшее время.</span><span class="error-text">Произошла ошибка. Приносим свои извинения. Попробуйте отправить заявку через 30 минут.</span></div>
+        <div class="close"></div>
+        <div class="popup-title">Заказать звонок</div>
+        <div class="popup-form">
+          <div class="popup-form-title">Введите ваши данные:</div>
+          <input placeholder="Имя" class="input">
+          <input placeholder="+7 (985) 333-44-44" class="input input-phone">
+          <div id="call-send" class="popup-btn catalog">Отправить</div>
+          <div class="popup-form-docs active">
+            <div></div><span>Нажимая кнопку "Отправить", вы соглашаетесь с нашей <a href="" target="_blank"> политикой конфиденциальности</a></span>
+          </div>
+        </div>
+      </div>
+      <div id="test-popup" class="popup popup-test">
+        <div class="callback"><span class="success-text">Заявка доставлена. Мы перезвоним вам в ближайшее время.</span><span class="error-text">Произошла ошибка. Приносим свои извинения. Попробуйте отправить заявку через 30 минут.</span></div>
+        <div class="close"></div>
+        </div>
+
+    <script type="text/javascript">
+
+ // User Interface
+var lang = document.getElementsByClassName('lang'),
+  docs = document.getElementsByClassName('popup-form-docs'),
+  btnRadio = document.querySelectorAll('.popup-btns:not(.checkbox) .popup-btn'),
+  btnCheck = document.querySelectorAll('.popup-btns.checkbox .popup-btn:not(.popup-btn-next)');
+
+for (var i=0;i<btnRadio.length; i++)
+  btnRadio[i].addEventListener('click', radio);
+for (var i = 0; i<btnCheck.length; i++)
+  btnCheck[i].addEventListener('click', function(){
+    toggleActive(this);
+  });
+
+for(var i=0; i<lang.length;i++){
+  lang[i].getElementsByClassName('lang-item')[0].addEventListener('click', function(){
+    var parent = this.parentNode;
+    if (parent.classList.contains('active'))
+      parent.classList.remove('active');
+    else
+      parent.classList.add('active');
+  });
+}
+
+for (var i = 0; i < docs.length; i++) {
+  docs[i].getElementsByTagName('div')[0].addEventListener('click', function () {
+    toggleActive(this.parentNode);
+  });
+}
+
+
+function radio(){
+  var siblings = this.parentNode.children;
+  for(var j=0;j<siblings.length;j++)
+    siblings[j].classList.remove('active');
+  this.classList.add('active');
+}
+
+// Слайдер
+
+
+
+// Попапы (вызов, скрытие)
+var catalogBtn = document.getElementById('catalog-btn'),
+  catalogPopup = document.getElementById('catalog-popup'),
+  catalogSend = document.getElementById('catalog-send'),
+  testBtn = document.getElementById('test-btn'),
+  testPopup = document.getElementById('test-popup'),
+  testSend = document.getElementById('test-send'),
+  callBtn = document.getElementById('call-btn'),
+  callPopup = document.getElementById('call-popup'),
+  callSend = document.getElementById('call-send'),
+  popupContainer = document.getElementById('popup-container'),
+  fade = popupContainer.getElementsByClassName('fade')[0];
+
+
+testBtn.addEventListener('click', function(){
+  showPopup(testPopup);
+});
+callBtn.addEventListener('click', function(){
+  showPopup(callPopup);
+});
+fade.addEventListener('click', hidePopup);
+callPopup.getElementsByClassName('close')[0].addEventListener('click', hidePopup);
+testPopup.getElementsByClassName('close')[0].addEventListener('click', hidePopup);
+catalogPopup.getElementsByClassName('close')[0].addEventListener('click', hidePopup);
+function showPopup(target) {
+  popupContainer.style.display = 'block';
+  target.classList.add('active');
+  setTimeout(function () {
+    popupContainer.classList.add('anim-popup');
+    fade.style.opacity = 1;
+    target.style.top = (window.innerHeight - target.offsetHeight) / 2 + 'px';
+  }, 20)
+  setTimeout(function () {
+    target.classList.remove('anim-popup');
+  }, 1000)
+}
+function hidePopup() {
+  var activePopup = popupContainer.querySelector('.popup.active');
+  fade.style.opacity = 0;
+  activePopup.style.top = '-' + activePopup.offsetHeight + 'px';
+  setTimeout(function () {
+    popupContainer.style.display = 'none';
+    activePopup.classList.remove('active');
+  }, 500);
+}
+catalogSend.addEventListener('click', function () {
+  if (!checkValid(catalogPopup)) return;
+  var callback = catalogPopup.getElementsByClassName('callback')[0];
+  callback.classList.add('active');
+  setTimeout(function(){
+    callback.classList.add('loading');
+  }, 20);
+  var phoneVal = catalogPopup.getElementsByClassName('input-phone')[0].value,
+    nameval = catalogPopup.getElementsByClassName('input')[0].value;
+    data = {
+      lidtype: 'presentation',
+      phone: phoneVal,
+      name: nameval
+    };
+  $.ajax({
+    url: '/cl/formaction.php',
+    type: 'POST',
+    cache: false,
+    data: data,
+    complete: function (d, s) {
+      try {
+        if (d.status !== 200) {
+          throw new RangeError(d.status);
+        }
+        var json = d.responseText;
+        json = JSON.parse(json);
+        callback.classList.add('success');
+        callback.classList.remove('loading');
+        window.location.href = document.location.protocol + '//' + document.location.host + json.catalog;
+      } catch (e) {
+        window.formErrorApi();
+        callback.classList.add('error');
+        callback.classList.remove('loading');
+        console.log(e);
+      }
+      window.g_send_goal('catalog');
+    }
+  });
+})
+testSend.addEventListener('click', function () {
+  if (!checkValid(testPopup)) return;
+  var callback = testPopup.getElementsByClassName('callback')[0];
+  callback.classList.add('active');
+  setTimeout(function () {
+    callback.classList.add('loading');
+  }, 20);
+  var m = '',
+    a = [],
+    phoneVal = testPopup.getElementsByClassName('input-phone')[0].value,
+    nameVal = testPopup.getElementsByClassName('input')[0].value;
+  for (var i = 0; i < testItems.length - 1; i++) {
+    var answers = testItems[i].querySelectorAll('.popup-item:not(.branch) .popup-btn.active, .popup-item.branch .popup-target.active .popup-btn.active'),
+      aa = [];
+    for (var j = 0; j < answers.length; j++) {
+      aa.push(answers[j].textContent);
+    }
+    if (aa.length > 0) a.push((i + 1) + ') "' + testItems[i].getElementsByClassName('popup-message-text')[0].textContent + '"@@- ' + aa.join(', '));
+  }
+  m = 'Результаты теста для подбора@@@@' + a.join('@@');
+  var data = {
+    'feedback_contact': '1',
+    'name': nameVal,
+    'phone': phoneVal,
+    'mail': '',
+    'text': m,
+    'lidtype': 'selection',
+    'siteurl': window.location.href,
+    'personal': '',
+    'object': 'Прохождение теста'
+  }
+  $.ajax({
+    url: '/testaction.php',
+    type: 'POST',
+    data: data,
+    complete: function (d, s) {
+      try {
+        if (d.status !== 200) 
+          throw new RangeError(d.status);
+        callback.classList.add('success');
+        callback.classList.remove('loading');
+      } catch (e) {
+        window.formErrorApi();
+        callback.classList.add('error');
+        callback.classList.remove('loading');
+        console.log(e);
+      }
+      window.g_send_goal('test');
+    }
+  });
+});
+callSend.addEventListener('click', function () {
+  if (!checkValid(callPopup)) return;
+  var callback = callPopup.getElementsByClassName('callback')[0];
+  callback.classList.add('active');
+  setTimeout(function () {
+    callback.classList.add('loading');
+  }, 20);
+  var phoneVal = callPopup.getElementsByClassName('input-phone')[0].value,
+    nameval = callPopup.getElementsByClassName('input')[0].value;
+  data = {
+    lidtype: 'callback',
+    phone: phoneVal,
+    name: nameval
+  };
+  $.ajax({
+    url: '/cl/formaction.php',
+    type: 'POST',
+    cache: false,
+    data: data,
+    complete: function (d, s) {
+      try {
+        if (d.status !== 200)
+          throw new RangeError(d.status);
+        callback.classList.add('success');
+        callback.classList.remove('loading');
+      } catch (e) {
+        window.formErrorApi();
+        callback.classList.add('error');
+        callback.classList.remove('loading');
+        console.log(e);
+      }
+      window.g_send_goal('zvonok');
+    }
+  });
+})
+// Тест
+var testItems = testPopup.getElementsByClassName('popup-item'),
+  progressContainer = testPopup.getElementsByClassName('popup-progress')[0],
+  progress = [],
+  testBtns = testPopup.querySelectorAll('.popup-btns:not(.checkbox) .popup-btn, .popup-btns.checkbox .popup-btn-next'),
+  index = 0,
+  max = testItems.length,
+  originTestItems = testPopup.getElementsByClassName('origin');
+
+for (var i=0; i<max - 1;i++){
+  var element = document.createElement('div');
+  element.className = 'popup-progress-item';
+  element.textContent = i+1;
+  progressContainer.appendChild(element);
+  progress[i] = element;
+}
+progress[0].classList.add('active');
+
+for(var i=0; i<testBtns.length;i++)
+  testBtns[i].addEventListener('click', nextSlide);
+for(var i=0; i<originTestItems.length;i++){
+  var btns = originTestItems[i].getElementsByClassName('popup-btn');
+  for(var j=0;j<btns.length;j++)
+    btns[j].addEventListener('click', function(){
+      var dataTarget = this.dataset.target.split('.'),
+        target = testItems[dataTarget[0] - 1].getElementsByClassName('popup-target');
+      if (target.length == 0) return;
+      for (var u=0;u<target.length;u++)
+        target[u].classList.remove('active');
+      target[dataTarget[1] - 1].classList.add('active');
+    })
+}
+
+
+for(var i=0;i<progress.length;i++){
+  progress[i].addEventListener('click',function(){
+    if (this.classList.contains('active')) return;
+    else if (!this.classList.contains('done')){
+      var j=0,
+        th = this,
+        toSlide = setInterval(function (){
+          nextSlide();
+          if (th.classList.contains('active')) clearInterval(toSlide);
+        }, 150);
+    }
+    else if (this.classList.contains('done')) {
+      var j = 0,
+        th = this,
+        toSlide = setInterval(function () {
+          prevSlide();
+          if (th.classList.contains('active')) clearInterval(toSlide);
+        }, 150);
+    }
+  });
+}
+
+function prevSlide(){
+  if (index == 0) return;
+  var active = testItems[index],
+    hidden = testItems[index - 1];
+  active.classList.add('todo');
+  progress[index].classList.remove('active');
+  progress[index - 1].classList.remove('done');
+  progress[index - 1].classList.add('active');
+  setTimeout(function () {
+    active.classList.remove('active');
+    hidden.classList.remove('done');
+    hidden.classList.add('show-left', 'active');
+    testPopup.style.top = (window.innerHeight - testPopup.offsetHeight) / 2 + 'px';
+    setTimeout(function () {
+      hidden.classList.remove('show-left');
+    }, 820);
+  }, 150);
+  index--;
+}
+function nextSlide(){
+  var active = testItems[index],
+    hidden = testItems[index + 1];
+  active.classList.add('done');
+  progress[index].classList.add('done');
+  progress[index].classList.remove('active');
+  if (progress[index + 1]) progress[index+1].classList.add('active');
+  setTimeout(function () {
+    active.classList.remove('active');
+    hidden.classList.remove('todo');
+    hidden.classList.add('active', 'show-right');
+    testPopup.style.top = (window.innerHeight - testPopup.offsetHeight) / 2 + 'px';
+    setTimeout(function () {
+      hidden.classList.remove('show-right');
+    }, 820);
+  }, 150);
+  index++;
+  if (index+1 == max){
+    progress[0].parentNode.style.display = 'none';
+  }
+}
+
+// Глобальные функции
+function toggleActive(target) {
+  if (target.classList.contains('active'))
+    target.classList.remove('active');
+  else
+    target.classList.add('active');
+}
+function checkValid(parent) {
+  var docs = parent.getElementsByClassName('popup-form-docs')[0],
+    phone = parent.getElementsByClassName('input-phone')[0],
+    name = parent.getElementsByClassName('input')[0];
+  if (name.value.length == 0){
+    name.classList.add('invalid');
+    return;
+  }
+  else{
+    name.classList.remove('invalid');
+    name.classList.add('valid');
+  }
+  if (!phone.classList.contains('valid')){
+    phone.classList.add('invalid');
+    return 0;
+  }
+  if (!docs.classList.contains('active')) {
+    docs.classList.add('invalid');
+    return 0;
+  } else
+    docs.classList.remove('invalid');
+  return 1;
+}
+/**
+ *Отправка целей в Яндекс.Метрика и Google Analytics
+ * @param {string} [name] Имя цели
+ * @param {function|null} [callback] Функция обратного вызова, срабатывает после отправки или не отправки всех целей.
+ * */
+window.g_send_goal = function (name, callback) {
+  var callback_i = 0;
+  var callback_t = null;
+
+  function callback_proc(is_finish) {
+    if (!callback)
+      return;
+    if (callback_i >= 1 || is_finish) {
+      clearTimeout(callback_t);
+      callback();
+      callback = null;
+    }
+    callback_i++;
+  }
+
+  try {
+    console.log('g_send_goal ' + name);
+    callback_t = setTimeout(callback_proc.bind(this, true), 5000);
+    ym(ym_id, 'reachGoal', name, null, function () {
+      console.log('ym ok');
+      callback_proc();
+    });
+    gtag('event', name, {
+      'event_category': 'submint',
+      'event_callback': function () {
+        console.log('gtag ok');
+        callback_proc();
+      }
+    });
+  } catch (e) {
+    callback_proc(true);
+    console.error(e.message);
+  }
+}
+
+    </script>
